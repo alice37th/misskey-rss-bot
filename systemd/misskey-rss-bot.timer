@@ -2,8 +2,7 @@
 Description=Run Misskey RSS Bot every 15 minutes
 
 [Timer]
-OnBootSec=5min
-OnUnitActiveSec=15min
+OnCalendar=*:0/15
 Unit=misskey-rss-bot.service
 Persistent=true
 

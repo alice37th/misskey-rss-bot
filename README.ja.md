@@ -96,7 +96,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now misskey-rss-bot.timer
 ```
 
-タイマーは15分ごとに `misskey-rss-bot.service` をoneshot実行します。
+タイマーは `OnCalendar=*:0/15` により、毎時 `:00`、`:15`、`:30`、`:45` の15分きっかりで `misskey-rss-bot.service` をoneshot実行します。
 
 ## 8. ログ確認
 
