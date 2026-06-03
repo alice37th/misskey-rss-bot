@@ -1,0 +1,9 @@
+[Unit]
+Description=Misskey RSS Bot
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/misskey-rss-bot
+ExecStart=/opt/misskey-rss-bot/.venv/bin/python /opt/misskey-rss-bot/bot.py

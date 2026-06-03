@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Misskey RSS Bot every 15 minutes
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=15min
+Unit=misskey-rss-bot.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target
