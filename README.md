@@ -45,7 +45,7 @@ FEED_URL=
 VISIBILITY=public
 DRY_RUN=true
 MAX_POSTS_PER_RUN=3
-POST_TEMPLATE=templates/post.txt
+POST_TEMPLATE=
 DATABASE_PATH=data/bot.sqlite
 ```
 
@@ -120,7 +120,7 @@ The database and tables are created automatically on first run.
 
 ## 11. Change the post template
 
-The default template is `templates/post.txt`.
+The bot has the following built-in default template, so no template file is required for the default behavior.
 
 ```text
 📝 新着記事
@@ -130,7 +130,23 @@ The default template is `templates/post.txt`.
 {{ link }}
 ```
 
-Editing `templates/post.txt` changes the generated post body. You can also specify another template file with `POST_TEMPLATE` in `.env`.
+If `POST_TEMPLATE` is empty or set to the default path, the bot looks for `templates/post.txt`. If that file exists, it is used. If it does not exist, the built-in default template is used.
+
+To customize the post body on a server, create `templates/post.txt`:
+
+```bash
+mkdir -p templates
+cat > templates/post.txt <<'EOF'
+📝 新着記事
+
+{{ title }}
+
+{{ link }}
+EOF
+vi templates/post.txt
+```
+
+`templates/post.txt` is ignored by Git, so local template edits do not conflict with future `git pull` operations. You can also specify another file with `POST_TEMPLATE` in `.env`. If a custom `POST_TEMPLATE` path is set and the file does not exist, the bot exits with a clear error.
 
 Available variables:
 
@@ -139,8 +155,6 @@ Available variables:
 - `{{ guid }}`
 - `{{ pub_date }}`
 - `{{ description }}`
-
-If the template file does not exist, the bot exits with a clear error.
 
 ## 12. Troubleshooting
 
@@ -169,7 +183,7 @@ Check that `FEED_URL` is correct and that the server can access external HTTP/HT
 
 ### Template file does not exist
 
-Check that `POST_TEMPLATE` in `.env` points to an existing file.
+If you set a custom `POST_TEMPLATE` in `.env`, check that it points to an existing file. If `POST_TEMPLATE` is empty, a missing `templates/post.txt` is not an error because the built-in default template is used.
 
 ## Duplicate detection
 
@@ -192,8 +206,8 @@ Items previously saved with `status=failed` are also treated as registered, and 
 - [ ] Normal runs do not post the same RSS item twice
 - [ ] `status=posted` is saved only after a successful post
 - [ ] On posting failure, `status=failed` and `error_message` are saved
-- [ ] Editing `templates/post.txt` changes the post body
-- [ ] `.env` and `data/*.sqlite` are not tracked by Git
+- [ ] Creating or editing `templates/post.txt` changes the post body
+- [ ] `.env`, `data/*.sqlite`, and `templates/post.txt` are not tracked by Git
 
 ## Developer verification
 

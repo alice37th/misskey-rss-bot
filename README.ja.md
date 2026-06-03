@@ -45,7 +45,7 @@ FEED_URL=
 VISIBILITY=public
 DRY_RUN=true
 MAX_POSTS_PER_RUN=3
-POST_TEMPLATE=templates/post.txt
+POST_TEMPLATE=
 DATABASE_PATH=data/bot.sqlite
 ```
 
@@ -120,7 +120,7 @@ DBとテーブルは初回実行時に自動作成されます。
 
 ## 11. 投稿テンプレート変更方法
 
-既定テンプレートは `templates/post.txt` です。
+Bot本体に以下の既定テンプレートを持っているため、標準の投稿文でよければテンプレートファイルは不要です。
 
 ```text
 📝 新着記事
@@ -130,7 +130,23 @@ DBとテーブルは初回実行時に自動作成されます。
 {{ link }}
 ```
 
-`templates/post.txt` を編集すると投稿文が変わります。`.env` の `POST_TEMPLATE` で別ファイルを指定することもできます。
+`POST_TEMPLATE` が空、または既定パスのままの場合、Botは `templates/post.txt` を探します。ファイルが存在すればそれを使い、存在しなければBot内蔵の既定テンプレートを使います。
+
+サーバ上で投稿文を変更したい場合は、`templates/post.txt` を作成してください。
+
+```bash
+mkdir -p templates
+cat > templates/post.txt <<'EOF'
+📝 新着記事
+
+{{ title }}
+
+{{ link }}
+EOF
+vi templates/post.txt
+```
+
+`templates/post.txt` はGit管理対象外にしているため、ローカル編集が将来の `git pull` と衝突しにくくなります。`.env` の `POST_TEMPLATE` で別ファイルを指定することもできます。独自の `POST_TEMPLATE` を指定した場合、そのファイルが存在しなければ明確なエラーを出して終了します。
 
 使える変数:
 
@@ -139,8 +155,6 @@ DBとテーブルは初回実行時に自動作成されます。
 - `{{ guid }}`
 - `{{ pub_date }}`
 - `{{ description }}`
-
-テンプレートファイルが存在しない場合、明確なエラーを出して終了します。
 
 ## 12. トラブルシュート
 
@@ -169,7 +183,7 @@ DBとテーブルは初回実行時に自動作成されます。
 
 ### テンプレートファイルがない
 
-`.env` の `POST_TEMPLATE` が存在するファイルを指しているか確認してください。
+`.env` で独自の `POST_TEMPLATE` を指定している場合、そのファイルが存在するか確認してください。`POST_TEMPLATE` が空の場合、`templates/post.txt` がなくてもBot内蔵の既定テンプレートを使うためエラーにはなりません。
 
 ## 重複判定仕様
 
@@ -192,8 +206,8 @@ DBとテーブルは初回実行時に自動作成されます。
 - [ ] 通常実行で同じRSS itemを二重投稿しない
 - [ ] 投稿成功後だけ `status=posted` になる
 - [ ] 投稿失敗時は `status=failed` と `error_message` が保存される
-- [ ] `templates/post.txt` を変更すると投稿文が変わる
-- [ ] `.env` や `data/*.sqlite` がGit管理対象にならない
+- [ ] `templates/post.txt` を作成または変更すると投稿文が変わる
+- [ ] `.env`、`data/*.sqlite`、`templates/post.txt` がGit管理対象にならない
 
 ## 開発者向け検証
 

@@ -4,3 +4,5 @@ data/*.sqlite
 __pycache__/
 *.pyc
 *.log
+templates/post.txt
+config/

@@ -24,6 +24,11 @@ DEFAULT_FEED_URL = ""
 DEFAULT_VISIBILITY = "public"
 DEFAULT_MAX_POSTS_PER_RUN = 3
 DEFAULT_POST_TEMPLATE = "templates/post.txt"
+DEFAULT_POST_TEMPLATE_TEXT = """📝 新着記事
+
+{{ title }}
+
+{{ link }}"""
 DEFAULT_DATABASE_PATH = "data/bot.sqlite"
 REQUEST_TIMEOUT_SECONDS = 20
 
@@ -39,6 +44,7 @@ class Config:
     dry_run: bool
     max_posts_per_run: int
     post_template: Path
+    post_template_required: bool
     database_path: Path
 
 
@@ -82,6 +88,9 @@ def load_config() -> Config:
     if max_posts < 0:
         raise RuntimeError("MAX_POSTS_PER_RUN must be 0 or greater")
 
+    post_template_value = os.getenv("POST_TEMPLATE", "").strip()
+    post_template_required = bool(post_template_value and post_template_value != DEFAULT_POST_TEMPLATE)
+
     return Config(
         misskey_host=os.getenv("MISSKEY_HOST", "").strip() or None,
         misskey_token=os.getenv("MISSKEY_TOKEN", "").strip() or None,
@@ -89,7 +98,8 @@ def load_config() -> Config:
         visibility=os.getenv("VISIBILITY", DEFAULT_VISIBILITY).strip() or DEFAULT_VISIBILITY,
         dry_run=str_to_bool(os.getenv("DRY_RUN"), default=True),
         max_posts_per_run=max_posts,
-        post_template=Path(os.getenv("POST_TEMPLATE", DEFAULT_POST_TEMPLATE).strip() or DEFAULT_POST_TEMPLATE),
+        post_template=Path(post_template_value or DEFAULT_POST_TEMPLATE),
+        post_template_required=post_template_required,
         database_path=Path(os.getenv("DATABASE_PATH", DEFAULT_DATABASE_PATH).strip() or DEFAULT_DATABASE_PATH),
     )
 
@@ -344,12 +354,18 @@ def select_new_items(conn: sqlite3.Connection, items: Iterable[RssItem]) -> tupl
     return candidates, skipped
 
 
-def load_template(template_path: Path) -> str:
-    if not template_path.exists():
+def load_template(template_path: Path, required: bool = False) -> str:
+    if template_path.exists():
+        if not template_path.is_file():
+            raise RuntimeError(f"Post template path is not a file: {template_path}")
+        LOGGER.info("Using post template file: %s", template_path)
+        return template_path.read_text(encoding="utf-8")
+
+    if required:
         raise RuntimeError(f"Post template file not found: {template_path}")
-    if not template_path.is_file():
-        raise RuntimeError(f"Post template path is not a file: {template_path}")
-    return template_path.read_text(encoding="utf-8")
+
+    LOGGER.info("Post template file not found: %s; using built-in default template", template_path)
+    return DEFAULT_POST_TEMPLATE_TEXT
 
 
 def render_post(template: str, item: RssItem) -> str:
@@ -446,7 +462,7 @@ def run_normal(config: Config, conn: sqlite3.Connection) -> int:
         LOGGER.info("No new items to post.")
         return 0
 
-    template = load_template(config.post_template)
+    template = load_template(config.post_template, required=config.post_template_required)
     if config.dry_run:
         for item in to_process:
             text = render_post(template, item)
