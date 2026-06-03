@@ -20,7 +20,7 @@ import feedparser
 import requests
 from dotenv import load_dotenv
 
-DEFAULT_FEED_URL = "https://blog.seeds-9.com/feed.xml"
+DEFAULT_FEED_URL = ""
 DEFAULT_VISIBILITY = "public"
 DEFAULT_MAX_POSTS_PER_RUN = 3
 DEFAULT_POST_TEMPLATE = "templates/post.txt"
@@ -85,7 +85,7 @@ def load_config() -> Config:
     return Config(
         misskey_host=os.getenv("MISSKEY_HOST", "").strip() or None,
         misskey_token=os.getenv("MISSKEY_TOKEN", "").strip() or None,
-        feed_url=os.getenv("FEED_URL", DEFAULT_FEED_URL).strip() or DEFAULT_FEED_URL,
+        feed_url=os.getenv("FEED_URL", DEFAULT_FEED_URL).strip(),
         visibility=os.getenv("VISIBILITY", DEFAULT_VISIBILITY).strip() or DEFAULT_VISIBILITY,
         dry_run=str_to_bool(os.getenv("DRY_RUN"), default=True),
         max_posts_per_run=max_posts,
@@ -101,6 +101,11 @@ def validate_posting_config(config: Config) -> None:
         raise RuntimeError("MISSKEY_HOST is required when DRY_RUN=false")
     if not config.misskey_token:
         raise RuntimeError("MISSKEY_TOKEN is required when DRY_RUN=false")
+
+
+def validate_feed_config(config: Config) -> None:
+    if not config.feed_url:
+        raise RuntimeError("FEED_URL is required")
 
 
 def utc_now_iso() -> str:
@@ -403,6 +408,7 @@ def post_to_misskey(config: Config, text: str) -> str | None:
 def run_init_seen(config: Config, conn: sqlite3.Connection) -> int:
     LOGGER.info("Mode: init-seen")
     LOGGER.info("DRY_RUN: %s (init-seen never posts to Misskey)", config.dry_run)
+    validate_feed_config(config)
     items = fetch_rss(config.feed_url)
 
     registered = 0
@@ -423,6 +429,7 @@ def run_init_seen(config: Config, conn: sqlite3.Connection) -> int:
 def run_normal(config: Config, conn: sqlite3.Connection) -> int:
     LOGGER.info("Mode: normal")
     LOGGER.info("DRY_RUN: %s", config.dry_run)
+    validate_feed_config(config)
     validate_posting_config(config)
 
     items = fetch_rss(config.feed_url)

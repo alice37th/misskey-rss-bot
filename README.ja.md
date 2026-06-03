@@ -6,7 +6,7 @@
 
 単一RSSフィードを定期確認し、新規記事を Misskey / Sharkey に投稿するPython製Botです。
 
-- 対象RSS: `https://blog.seeds-9.com/feed.xml`（`.env` の `FEED_URL` で変更可能）
+- 対象RSS: `.env` の `FEED_URL` に設定
 - Misskey / Sharkey ホスト: `.env` の `MISSKEY_HOST`
 - Misskey APIトークン: `.env` の `MISSKEY_TOKEN`
 - 通知済み記事管理: SQLite
@@ -39,9 +39,9 @@ vi .env
 `.env` の主な項目:
 
 ```dotenv
-MISSKEY_HOST=https://a19n.seeds-9.com
-MISSKEY_TOKEN=MisskeyまたはSharkeyのAPIトークン
-FEED_URL=https://blog.seeds-9.com/feed.xml
+MISSKEY_HOST=
+MISSKEY_TOKEN=
+FEED_URL=
 VISIBILITY=public
 DRY_RUN=true
 MAX_POSTS_PER_RUN=3
@@ -146,11 +146,15 @@ DBとテーブルは初回実行時に自動作成されます。
 
 ### `.env` がない
 
-`cp .env.example .env` を実行し、必要な値を編集してください。`.env` がない場合は環境変数と既定値を使いますが、本番投稿には `MISSKEY_HOST` と `MISSKEY_TOKEN` が必要です。
+`cp .env.example .env` を実行し、必要な値を編集してください。`.env` がない場合は環境変数と既定値を使いますが、実行には `FEED_URL` が必要で、本番投稿には `MISSKEY_HOST` と `MISSKEY_TOKEN` が必要です。
 
 ### `MISSKEY_TOKEN` が未設定
 
 `DRY_RUN=false` で実行する場合、`.env` の `MISSKEY_TOKEN` を設定してください。未設定の場合は投稿せずエラー終了します。
+
+### `FEED_URL` が未設定
+
+`.env` の `FEED_URL` を設定してください。このBotには既定のRSS URLは含めていません。
 
 ### RSS取得失敗
 

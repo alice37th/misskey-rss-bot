@@ -4,7 +4,7 @@
 
 A Python bot that periodically checks a single RSS feed and posts new articles to Misskey / Sharkey.
 
-- Target RSS feed: `https://blog.seeds-9.com/feed.xml` (configurable via `FEED_URL` in `.env`)
+- Target RSS feed: set `FEED_URL` in `.env`
 - Misskey / Sharkey host: `MISSKEY_HOST` in `.env`
 - Misskey API token: `MISSKEY_TOKEN` in `.env`
 - Posted/seen item tracking: SQLite
@@ -39,9 +39,9 @@ vi .env
 Main `.env` settings:
 
 ```dotenv
-MISSKEY_HOST=https://a19n.seeds-9.com
-MISSKEY_TOKEN=Your Misskey or Sharkey API token
-FEED_URL=https://blog.seeds-9.com/feed.xml
+MISSKEY_HOST=
+MISSKEY_TOKEN=
+FEED_URL=
 VISIBILITY=public
 DRY_RUN=true
 MAX_POSTS_PER_RUN=3
@@ -123,7 +123,7 @@ The database and tables are created automatically on first run.
 The default template is `templates/post.txt`.
 
 ```text
-📝 New article
+📝 新着記事
 
 {{ title }}
 
@@ -146,11 +146,15 @@ If the template file does not exist, the bot exits with a clear error.
 
 ### `.env` does not exist
 
-Run `cp .env.example .env` and edit the required values. If `.env` is missing, the bot uses environment variables and defaults where possible, but production posting requires `MISSKEY_HOST` and `MISSKEY_TOKEN`.
+Run `cp .env.example .env` and edit the required values. If `.env` is missing, the bot uses environment variables and defaults where possible, but runtime requires `FEED_URL`, and production posting requires `MISSKEY_HOST` and `MISSKEY_TOKEN`.
 
 ### `MISSKEY_TOKEN` is not set
 
 When running with `DRY_RUN=false`, set `MISSKEY_TOKEN` in `.env`. If it is missing, the bot exits without posting.
+
+### `FEED_URL` is not set
+
+Set `FEED_URL` in `.env`. The bot does not include a default feed URL.
 
 ### RSS fetch failed
 
